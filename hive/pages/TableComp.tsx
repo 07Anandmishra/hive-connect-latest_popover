@@ -94,9 +94,10 @@ const TableComp = () => {
 
   const [selectedUser, setSelectedUser] = useState<DataItem | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  
 
   const [column2, setColumn2] = useState([
-    { id: 'id', name: 'Id', isSort: true, isFilter: true },
+    { id: 'id', name: 'Id', isSort: false, isFilter: false ,isFrozen:true},
     { id: 'name', name: 'Name', isSort: true, isFilter: true, isFrozen: false },
     {
       id: 'email',
@@ -135,6 +136,7 @@ const TableComp = () => {
     },
     { id: 'actions', name: 'Actions', isSort: true, isFilter: true },
   ]);
+  
 
   const [checked, setChecked] = useState<string[]>([]);
 
@@ -512,6 +514,7 @@ const TableComp = () => {
                                       backgroundColor: '#fff', // To cover the content when scrolling
                                     }}
                                   >
+                                   
                                     {column.isSort && (
                                       <IconButton
                                         onClick={() => handleSort(column.id)}
@@ -536,6 +539,7 @@ const TableComp = () => {
                                       >
                                         <BsFunnel />
                                       </IconButton>
+                                      
                                     )}
                                   </TableCell>
                                 )}
