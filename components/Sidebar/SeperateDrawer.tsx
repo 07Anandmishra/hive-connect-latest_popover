@@ -149,11 +149,9 @@ export default function SeperateDrawer({ open ,handleDrawerClose,theme}:Seperate
 
 
 
-
-
   return (
     <>
-      <Drawer className="sidebar" variant="permanent" open={open}   >
+      <Drawer className="sidebar" variant="permanent" open={open} theme={theme}   >
         <DrawerHeader />
         <Divider />
         <List className="List-menu-sidebar">

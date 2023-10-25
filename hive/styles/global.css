@@ -192,3 +192,20 @@ table thead th, table thead th div, table tbody td.MuiTableCell-root, table tbod
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
   z-index: 1000;
 }
+
+
+.re-resizable-handle {
+  display: block;
+  background: #ccc;
+  width: 10px;
+  height: 100%;
+  cursor: col-resize;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
+
+
+
+

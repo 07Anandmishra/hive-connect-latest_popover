@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useEffect, useState } from 'react';
 import {
   Paper,
@@ -13,12 +12,16 @@ import {
   TextField,
   MenuItem,
   Select,
+  Stack,
+  Autocomplete,
+  Popover,
 } from '@mui/material';
 
 import SearchBox from './SearchBox';
 import axios from 'axios';
-import Pagination from 'components/Pagination/Pagination';
+import Pagination from '../../components/Pagination/Pagination';
 import { BiSort } from 'react-icons/bi';
+// import "re-resizable/css/styles.css";
 
 import Datepickercomponent from './Datepickercomponent';
 
@@ -26,7 +29,7 @@ import KeepMountedModal from './CustomModal';
 import '../styles/appbar.scss';
 import '../styles/global.css';
 
-import CustomButton from 'components/CustomButton/CustomButton';
+import CustomButton from '../../components/CustomButton/CustomButton';
 import ListComp from './ListComp';
 import { GiSettingsKnobs } from 'react-icons/gi';
 import { BiSortDown, BiSortUp } from 'react-icons/bi';
@@ -51,6 +54,14 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+// import { Resizable } from 'react-resizable';
+// import { Resizable } from "re-resizable";
+
+
+
+import 'react-resizable/css/styles.css';
+
+import FilterPopover from '../../components/Popupfilter/FilterPopover'
 
 interface DataItem {
   id: number;
@@ -64,22 +75,20 @@ interface DataItem {
   [key: string]: any;
 }
 
+
 const TableComp = () => {
   const [data, setData] = useState<DataItem[]>([]);
-
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
   const [filters, setFilters] = useState<Record<string, string>>({});
 
-  const [selectedColumn, setSelectedColumn] = useState('');
+  const [selectedColumn, setSelectedColumn] = useState<string>('');
   const [sort, setSort] = useState({ field: '', order: '' });
   const [selectedOption, setSelectedOption] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   
   const [pinnedColumn, setPinnedColumn] = useState(null);
-
-
   const [ShowGlobalHeader, setShowGlobalHeader] = useState<boolean>(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -94,7 +103,9 @@ const TableComp = () => {
 
   const [selectedUser, setSelectedUser] = useState<DataItem | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [columnWidths, setColumnWidths] = useState<any>({});
+
 
   const [column2, setColumn2] = useState([
     { id: 'id', name: 'Id', isSort: false, isFilter: false ,isFrozen:true},
@@ -139,6 +150,12 @@ const TableComp = () => {
   
 
   const [checked, setChecked] = useState<string[]>([]);
+
+
+
+
+  
+
 
   const handleToggle = (value: string) => () => {
     const currentIndex = checked.indexOf(value);
@@ -228,7 +245,8 @@ const TableComp = () => {
     } else {
       getData();
     }
-    setFilterDialogOpen(false);
+    // setFilterDialogOpen(false);
+    setAnchorEl(null)
   };
 
   // const clearAll = () => {
@@ -418,6 +436,15 @@ const TableComp = () => {
     }
   };
 
+  const openFilterPopover = (event: React.MouseEvent<HTMLButtonElement>, columnId: string) => {
+    setSelectedColumn(columnId);
+    setAnchorEl(event.currentTarget);
+    console.log('458',event.currentTarget)
+  };
+
+  const closeFilterPopover = () => {
+    setAnchorEl(null);
+  };
 
 
 
@@ -463,9 +490,9 @@ const TableComp = () => {
       >
         <Paper>
           <TableContainer
-            style={{ maxWidth: '100%', height: '500px', overflowY: 'auto' }}
+            style={{ maxWidth: '100%', height: '500px', overflowY: 'auto' ,overflowX:'auto'}}
           >
-            <Table style={{ minWidth: 'max-content' }}>
+            <Table style={{ minWidth: 'max-content',tableLayout: 'auto' }}>
               <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="columns" direction="horizontal">
                   {(provided) => (
@@ -476,20 +503,24 @@ const TableComp = () => {
                       <TableRow>
                         {column2.map((column, index) =>
                           visibleColumns.includes(column.id) ? (
+                           
                             !frozenColumns.includes(column.id) &&
                             column.id !== 'id' &&
                             column.id !== 'actions' ? (
+                              
                               <Draggable
                                 key={column.id}
                                 draggableId={column.id}
                                 index={index}
                               >
                                 {(provided) => (
+                              
                                   <TableCell
                                     {...provided.draggableProps}
                                     {...provided.dragHandleProps}
                                     ref={provided.innerRef}
                                     //  style={{ fontWeight: "bold", textAlign: 'center', fontSize: "17px", color: "rgba(0, 0, 0, 0.54)" }}
+                                    
                                     key={column.id}
                                     className={
                                       column.id === 'actions'
@@ -499,7 +530,9 @@ const TableComp = () => {
                                         : ''
                                     }
                                     style={{
-                                      ...provided.draggableProps.style, // spread the styles to keep the existing styles
+                                      ...provided.draggableProps.style, 
+                                      // spread the styles to keep the existing styles
+                                   
                                       fontWeight: 'bold',
                                       textAlign: 'center',
                                       fontSize: '17px',
@@ -511,11 +544,12 @@ const TableComp = () => {
                                           : 'unset',
                                       top: 0,
                                       zIndex: 1,
-                                      backgroundColor: '#fff', // To cover the content when scrolling
+                                      backgroundColor: '#fff', 
+                                      
+                                      // To cover the content when scrolling
                                     }}
                                   >
-                                   
-                                    {column.isSort && (
+                                    {/* {column.isSort && (
                                       <IconButton
                                         onClick={() => handleSort(column.id)}
                                       >
@@ -530,21 +564,50 @@ const TableComp = () => {
                                         )}
                                       </IconButton>
                                     )}
+                                    
                                     {column.name}
+
                                     {column.isFilter && (
-                                      <IconButton
-                                        onClick={() =>
-                                          openFilterDialog(column.id)
-                                        }
-                                      >
+
+                                      // <IconButton
+                                      //   onClick={() =>
+                                      //     openFilterDialog(column.id)
+                                      //   }
+                                      // >
+
+                                      <IconButton onClick={(e) => openFilterPopover(e, column.id)} style={{float:'right'}}>
                                         <BsFunnel />
                                       </IconButton>
                                       
-                                    )}
+                                    )} */}
+
+   {column.isSort && column.id !== 'actions' && (
+                            <IconButton onClick={() => handleSort(column.id)}>
+                                {sort.field === column.id ? (
+                                    sort.order === 'asc' ? (
+                                        <BiSortUp />
+                                    ) : (
+                                        <BiSortDown />
+                                    )
+                                ) : (
+                                    <BiSort />
+                                )}
+                            </IconButton>
+                        )}
+                        {column.name}
+                        {column.isFilter && column.id !== 'actions' && (
+                            <IconButton onClick={(e) => openFilterPopover(e, column.id)} style={{float:'right'}}>
+                                <BsFunnel />
+                            </IconButton>
+                        )}     
+                        
                                   </TableCell>
+                                  
                                 )}
                               </Draggable>
+                            
                             ) : (
+
                               <TableCell
                                 key={column.id}
                                 style={{
@@ -559,6 +622,7 @@ const TableComp = () => {
                                   backgroundColor: '#fff',
                                 }}
                               >
+{/*                                 
                                 {(column.isSort || column.id === 'id') && (
                                   <IconButton
                                     onClick={() => handleSort(column.id)}
@@ -580,14 +644,38 @@ const TableComp = () => {
                                     onClick={() => openFilterDialog(column.id)}
                                   >
                                     <BsFunnel />
+                                    
                                   </IconButton>
-                                )}
+                                )} */}
+
+{(column.isSort || column.id === 'id') && column.id !== 'actions' && (
+        <IconButton onClick={() => handleSort(column.id)}>
+            {sort.field === column.id ? (
+                sort.order === 'asc' ? (
+                    <BiSortUp />
+                ) : (
+                    <BiSortDown />
+                )
+            ) : (
+                <BiSort />
+            )}
+        </IconButton>
+    )}
+    {column.name}
+    {(column.isFilter || column.id === 'id') && column.id !== 'actions' && (
+        <IconButton onClick={() => openFilterDialog(column.id)}>
+            <BsFunnel />
+        </IconButton>
+    )}
                               </TableCell>
+                             
                             )
+                          
                           ) : null
                         )}
                         {provided.placeholder}
                       </TableRow>
+                    
                     </TableHead>
                   )}
                 </Droppable>
@@ -642,8 +730,9 @@ const TableComp = () => {
                                   }}
                                 />
                               )
+
                             ) : column.id === 'actions' ? (
-                              <>
+                              <>                              
                                 <IconButton
                                   className="edit-button"
                                   onClick={() => startEditing(row.id, row)}
@@ -672,7 +761,7 @@ const TableComp = () => {
                               </>
                             ) : (
                               row[column.id]
-                            )}
+                            )}  
                           </TableCell>
                         ) : null
                       )}
@@ -771,51 +860,81 @@ const TableComp = () => {
         </Paper>
 
         <Dialog open={pinnedColumn !== null} onClose={() => setPinnedColumn(null)}>
-  <DialogContent>
-    <p>Pin Column:</p>
-    <Button onClick={handlePinToLeft}>Pin to Left</Button>
-    <Button onClick={handlePinToRight}>Pin to Right</Button>
+  <DialogContent >
+  
+    <p><strong>Pin Column: </strong></p>
+    <Stack direction="row" spacing={2} marginTop={2}>
+    <Button variant="outlined" onClick={handlePinToLeft}>Pin to Left</Button>
+    <Button variant="outlined" onClick={handlePinToRight}>Pin to Right</Button>
+    </Stack>
   </DialogContent>
   <DialogActions>
     <Button onClick={() => setPinnedColumn(null)}>Cancel</Button>
   </DialogActions>
+
 </Dialog>
 
-        <Dialog
-          open={filterDialogOpen}
-          onClose={() => setFilterDialogOpen(false)}
+{/* olde new */}
+
+{/* <Popover
+          open={Boolean(anchorEl)}
+          anchorEl={anchorEl}
+          onClose={closeFilterPopover}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
         >
-          <DialogContent>
-            <Select
-              value={selectedOption}
-              onChange={(e) => setSelectedOption(e.target.value)}
-              fullWidth
-              style={{ marginTop: '20px' }} // added some margin for spacing
-            >
-              <MenuItem value="start with">Starts With</MenuItem>
-              <MenuItem value="ends with">Ends With</MenuItem>
-              <MenuItem value="containes">Containes</MenuItem>
-              <MenuItem value="option4">Equals</MenuItem>
-              {/* ... add other options as required */}
-            </Select>
-            <TextField
-              autoFocus
-              margin="dense"
-              label={`Filter by ${selectedColumn}`}
-              type="text"
-              fullWidth
-              value={filters[selectedColumn] || ''}
-              onChange={(e) =>
-                setFilters({ ...filters, [selectedColumn]: e.target.value })
-              }
-            />
-          </DialogContent>
+          <div style={{ padding: '10px', width: '250px', height: '160px' }}>
+          <Select
+            value={selectedOption}
+            onChange={(e) => setSelectedOption(e.target.value)}
+            fullWidth
+            style={{ marginTop: '20px' }}
+          >
+            <MenuItem value="start with">Starts With</MenuItem>
+            <MenuItem value="ends with">Ends With</MenuItem>
+            <MenuItem value="contains">Contains</MenuItem>
+            <MenuItem value="equals">Equals</MenuItem>
+          </Select>
+
+          <Autocomplete
+            options={
+              [...new Set(data.map((option) => option[selectedColumn]))].filter(
+                (option) => option !== undefined && option !== null
+              )
+            }
+            getOptionLabel={(option) => option.toString()}
+            renderInput={(params) => (
+              <TextField {...params} autoFocus margin="dense" label={`Filter by ${selectedColumn}`} fullWidth />
+            )}
+            value={filters[selectedColumn] || ''}
+            onChange={(e, newValue) =>
+              setFilters({ ...filters, [selectedColumn]: newValue })
+            }
+          />
+          </div>
           <DialogActions>
-            <Button onClick={() => setFilterDialogOpen(false)}>Cancel</Button>
+            <Button onClick={ closeFilterPopover}>Cancel</Button>
             <Button onClick={applyFilter}>Apply</Button>
           </DialogActions>
-        </Dialog>
+        </Popover> */}
 
+<FilterPopover 
+  anchorEl={anchorEl}
+  onClose={() => setAnchorEl(null)}
+  selectedColumn={selectedColumn}
+  selectedOption={selectedOption}
+  setSelectedOption={setSelectedOption}
+  filters={filters}
+  setFilters={setFilters}
+  data={data}
+  applyFilter={applyFilter}
+/>
         {/* List Modal */}
 
         <KeepMountedModal open={open} setOpen={setOpen}>
@@ -828,8 +947,6 @@ const TableComp = () => {
             frozenColumns={frozenColumns}
             toggleFrozen={toggleFrozen}
             toggleFrozenn={toggleFrozenn} 
-             
-
           />
         </KeepMountedModal>
       </div>
