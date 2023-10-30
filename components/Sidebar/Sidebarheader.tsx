@@ -16,7 +16,7 @@ import AllProjecttable from '../Childcomponent/AllProjecttable';
 import Mytodos from '../Childcomponent/Mytodos';
 import PMIfollowups from '../Childcomponent/PMIfollowups';
 import Vendorfallowups from '../Childcomponent/Vendorfallowups';
-import TableComp from '../../hive/pages/TableComp';
+import TableComp from 'hive/pages/TableComp';
 import { Provider } from 'react-redux';
 import store from '../../app/Redux/Store/index'
 
