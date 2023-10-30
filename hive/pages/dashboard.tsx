@@ -18,6 +18,8 @@ import SeperateAppBar from '../../components/Sidebar/SeperateAppBar';
 import SeperateDrawer from '../../components/Sidebar/SeperateDrawer';
 import Sidebarheader from '../../components/Sidebar/Sidebarheader';
 import TableComp from './TableComp';
+import { Provider } from 'react-redux';
+import store from '../../app/Redux/Store/index'
 
 
 function Dashboard() {
@@ -25,7 +27,7 @@ function Dashboard() {
     
    
 
-      <div>
+      <Provider store={store}>
         <header>
         <Sidebarheader/>
        
@@ -33,7 +35,7 @@ function Dashboard() {
   
 {/* <body style={{backgroundColor:'#efefef'}}> */}
         <main style={{backgroundColor:'#efefef'}}>
-        {/* <TablePage /> */}
+     
         {/* <TableComp /> */}
         </main>
      
@@ -41,7 +43,7 @@ function Dashboard() {
    
     
 
-    </div>
+    </Provider>
     
    
   );

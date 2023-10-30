@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState ,useRef} from 'react';
 import {
   Paper,
   Table,
@@ -54,9 +54,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-// import { Resizable } from 'react-resizable';
-// import { Resizable } from "re-resizable";
 
+// import { Resizable } from "re-resizable";
 
 
 import 'react-resizable/css/styles.css';
@@ -103,12 +102,113 @@ const TableComp = () => {
 
   const [selectedUser, setSelectedUser] = useState<DataItem | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const [columnWidths, setColumnWidths] = useState<any>({});
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
+
+    const [columnWidths, setColumnWidths] = useState<Record<string, number>>({
+        name: 250,
+        email: 250,
+        phone: 250,
+        address:250,
+        designation:250,
+        pincode:250
+    });
+
+ 
+
+    const MIN_WIDTHS: {
+      [key: string]: number;
+  } = {
+      name: 200,
+      email: 200,
+      phone: 200,
+      address: 200,
+      designation: 200,
+      pincode: 200
+  };
+  
+    const resizingColumn = useRef<string | null>(null);
+    const prevX = useRef<number | null>(null);
+
+    const handleMouseDown = (columnName: string | null, e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        resizingColumn.current = columnName;
+        prevX.current = e.clientX;
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+//     const handleMouseMove = (e:any) => {
+//         if (resizingColumn.current) {
+//             // const diffX = e.clientX - prevX.current;
+
+//             const diffX = e.clientX - (prevX.current ?? 0);
+
+//             // setColumnWidths((prevWidths) => ({
+//             //     ...prevWidths,
+//             //     [resizingColumn.current]: prevWidths[resizingColumn.current] + diffX
+//             // }));
+            
+//             setColumnWidths((prevWidths) => {
+//     const currentColumn = resizingColumn.current;
+//     if (currentColumn && prevWidths[currentColumn] !== undefined) {
+//         return {
+//             ...prevWidths,
+//             [currentColumn]: prevWidths[currentColumn] + diffX
+//         };
+//     }
+//     return prevWidths;
+// });
+//             prevX.current = e.clientX;
+//         }
+//     };
+
+
+const handleMouseMove = (e:any) => {
+  if (resizingColumn.current) {
+      // const diffX = e.clientX - prevX.current;
+      const diffX = e.clientX - (prevX.current ?? 0);
+
+      
+      // setColumnWidths((prevWidths) => {
+      //     const newWidth = prevWidths[resizingColumn.current] + diffX;
+        
+      //     if (newWidth >= MIN_WIDTHS[resizingColumn.current]) {
+      //         return {
+      //             ...prevWidths,
+      //             [resizingColumn.current]: newWidth
+      //         };
+      //     } else {
+      //         return prevWidths;
+      //     }
+      // });
+      setColumnWidths((prevWidths) => {
+        const currentColumn = resizingColumn.current as keyof typeof prevWidths;
+        const newWidth = prevWidths[currentColumn] + diffX;
+    
+        if (newWidth >= MIN_WIDTHS[currentColumn]) {
+            return {
+                ...prevWidths,
+                [currentColumn]: newWidth
+            };
+        } else {
+            return prevWidths;
+        }
+    });
+      prevX.current = e.clientX;
+  }
+};
+
+
+    const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        resizingColumn.current = null;
+        prevX.current = null;
+    };
+
 
 
   const [column2, setColumn2] = useState([
-    { id: 'id', name: 'Id', isSort: false, isFilter: false ,isFrozen:true},
+    { id: 'id', name: 'Id', isSort: false, isFilter: true ,isFrozen:true},
     { id: 'name', name: 'Name', isSort: true, isFilter: true, isFrozen: false },
     {
       id: 'email',
@@ -442,9 +542,9 @@ const TableComp = () => {
     console.log('458',event.currentTarget)
   };
 
-  const closeFilterPopover = () => {
-    setAnchorEl(null);
-  };
+  // const closeFilterPopover = () => {
+  //   setAnchorEl(null);
+  // };
 
 
 
@@ -496,6 +596,7 @@ const TableComp = () => {
               <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="columns" direction="horizontal">
                   {(provided) => (
+                  
                     <TableHead
                       {...provided.droppableProps}
                       ref={provided.innerRef}
@@ -514,6 +615,8 @@ const TableComp = () => {
                                 index={index}
                               >
                                 {(provided) => (
+
+
                               
                                   <TableCell
                                     {...provided.draggableProps}
@@ -532,7 +635,8 @@ const TableComp = () => {
                                     style={{
                                       ...provided.draggableProps.style, 
                                       // spread the styles to keep the existing styles
-                                   
+                                    width: columnWidths.name ,
+                                    minWidth: MIN_WIDTHS.name ,
                                       fontWeight: 'bold',
                                       textAlign: 'center',
                                       fontSize: '17px',
@@ -545,64 +649,36 @@ const TableComp = () => {
                                       top: 0,
                                       zIndex: 1,
                                       backgroundColor: '#fff', 
-                                      
+                                     
                                       // To cover the content when scrolling
                                     }}
-                                  >
-                                    {/* {column.isSort && (
-                                      <IconButton
-                                        onClick={() => handleSort(column.id)}
-                                      >
-                                        {sort.field === column.id ? (
-                                          sort.order === 'asc' ? (
-                                            <BiSortUp />
-                                          ) : (
-                                            <BiSortDown />
-                                          )
-                                        ) : (
-                                          <BiSort />
-                                        )}
-                                      </IconButton>
-                                    )}
                                     
-                                    {column.name}
-
-                                    {column.isFilter && (
-
-                                      // <IconButton
-                                      //   onClick={() =>
-                                      //     openFilterDialog(column.id)
-                                      //   }
-                                      // >
-
-                                      <IconButton onClick={(e) => openFilterPopover(e, column.id)} style={{float:'right'}}>
-                                        <BsFunnel />
-                                      </IconButton>
-                                      
-                                    )} */}
-
+                                  >
+                                  
    {column.isSort && column.id !== 'actions' && (
                             <IconButton onClick={() => handleSort(column.id)}>
                                 {sort.field === column.id ? (
                                     sort.order === 'asc' ? (
-                                        <BiSortUp />
+                                        <BiSortUp style={{fontSize:'16px'}}/>
                                     ) : (
-                                        <BiSortDown />
+                                        <BiSortDown style={{fontSize:'16px'}}/>
                                     )
                                 ) : (
-                                    <BiSort />
+                                    <BiSort style={{fontSize:'16px'}}/>
                                 )}
                             </IconButton>
                         )}
                         {column.name}
                         {column.isFilter && column.id !== 'actions' && (
-                            <IconButton onClick={(e) => openFilterPopover(e, column.id)} style={{float:'right'}}>
-                                <BsFunnel />
+                            <IconButton onClick={(e) => openFilterPopover(e, column.id)} >
+                                <BsFunnel style={{fontSize:'16px'}}/>
                             </IconButton>
                         )}     
+
+            <div onMouseDown={(e) => handleMouseDown('name', e)} style={{ cursor: 'col-resize', float: 'right', userSelect: 'none',marginTop:'5px' }} >|</div>
                         
                                   </TableCell>
-                                  
+                                
                                 )}
                               </Draggable>
                             
@@ -622,31 +698,6 @@ const TableComp = () => {
                                   backgroundColor: '#fff',
                                 }}
                               >
-{/*                                 
-                                {(column.isSort || column.id === 'id') && (
-                                  <IconButton
-                                    onClick={() => handleSort(column.id)}
-                                  >
-                                    {sort.field === column.id ? (
-                                      sort.order === 'asc' ? (
-                                        <BiSortUp />
-                                      ) : (
-                                        <BiSortDown />
-                                      )
-                                    ) : (
-                                      <BiSort />
-                                    )}
-                                  </IconButton>
-                                )}
-                                {column.name}
-                                {(column.isFilter || column.id === 'id') && (
-                                  <IconButton
-                                    onClick={() => openFilterDialog(column.id)}
-                                  >
-                                    <BsFunnel />
-                                    
-                                  </IconButton>
-                                )} */}
 
 {(column.isSort || column.id === 'id') && column.id !== 'actions' && (
         <IconButton onClick={() => handleSort(column.id)}>
@@ -654,17 +705,17 @@ const TableComp = () => {
                 sort.order === 'asc' ? (
                     <BiSortUp />
                 ) : (
-                    <BiSortDown />
+                    <BiSortDown style={{fontSize:'16px'}}/>
                 )
             ) : (
-                <BiSort />
+                <BiSort style={{fontSize:'16px'}}/>
             )}
         </IconButton>
     )}
     {column.name}
     {(column.isFilter || column.id === 'id') && column.id !== 'actions' && (
         <IconButton onClick={() => openFilterDialog(column.id)}>
-            <BsFunnel />
+            <BsFunnel style={{fontSize:'15px'}}/>
         </IconButton>
     )}
                               </TableCell>
@@ -675,8 +726,8 @@ const TableComp = () => {
                         )}
                         {provided.placeholder}
                       </TableRow>
-                    
                     </TableHead>
+                  
                   )}
                 </Droppable>
 
@@ -737,7 +788,7 @@ const TableComp = () => {
                                   className="edit-button"
                                   onClick={() => startEditing(row.id, row)}
                                 >
-                                  <EditIcon />
+                                  <EditIcon style={{fontSize:'16px'}}/>
                                 </IconButton>
                                 <IconButton
                                   className="view-button"
@@ -746,7 +797,7 @@ const TableComp = () => {
                                     setViewModalOpen(true);
                                   }}
                                 >
-                                  <VisibilityIcon />
+                                  <VisibilityIcon style={{fontSize:'16px'}}/>
                                 </IconButton>
 
                                 <IconButton
@@ -756,7 +807,7 @@ const TableComp = () => {
                                     setDeleteDialogOpen(true);
                                   }}
                                 >
-                                  <DeleteIcon />
+                                  <DeleteIcon style={{fontSize:'16px'}}/>
                                 </IconButton>
                               </>
                             ) : (

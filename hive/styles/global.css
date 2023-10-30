@@ -194,18 +194,19 @@ table thead th, table thead th div, table tbody td.MuiTableCell-root, table tbod
 }
 
 
-.re-resizable-handle {
-  display: block;
-  background: #ccc;
-  width: 10px;
-  height: 100%;
-  cursor: col-resize;
+.react-resizable-handle {
   position: absolute;
-  top: 0;
+  width: 20px;
+  height: 100%;
+  bottom: 0;
   right: 0;
-  z-index: 1;
+  cursor: ew-resize;
 }
 
+
+.resizing {
+  user-select: none;
+}
 
 
 

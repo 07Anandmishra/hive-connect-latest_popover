@@ -4,8 +4,9 @@ import { useRouter } from 'next/navigation';
 import Head from 'next/head';
 import 'hive/styles/signup.css';
 import Image from 'next/image';
-import hive from 'hive/pages/hive.jpeg';
+// import hive from 'hive/pages/hive.jpeg';
 import Link from 'next/link';
+import React from 'react';
 
 export default function SignUpPage() {
   //   const authService = new AuthService();
@@ -74,12 +75,12 @@ export default function SignUpPage() {
         <div className="overlay-container">
           <div className="overlay">
             <div className="overlay-panel overlay-right">
-              <Image
+              {/* <Image
                 src={hive}
                 width={500}
                 height={500}
                 alt="Picture of the author"
-              />
+              /> */}
             </div>
           </div>
         </div>
