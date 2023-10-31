@@ -484,6 +484,7 @@ const handleMouseMove = (e:any) => {
         : [...prev, columnId]
     );
   };
+  
 
 
   const toggleFrozenn = (columnId:any) => {
